@@ -685,6 +685,8 @@ Where:
 - `<condition>` is an expression that evaluates to int (optional, if omitted, treated as always true)
 - `<update>` is an assignment, increment, or decrement (optional)
 
+Lexical scope for `<init>` and `<body>` follows [Scope Rules](#scope-rules).
+
 For example:
 ```tyc
 for (auto i = 0; i < 10; ++i) {
@@ -1055,7 +1057,9 @@ float product2 = multiply(2.5, 3.0); // product2: float (explicit type)
 
 ## Scope Rules
 
-There are 2 levels of scope: global and local.
+Names are resolved under **lexical (static) scope**: visibility depends only on the nesting of declarations in the source text, not on the order in which statements run.
+
+There are two broad levels: **global** (functions, structs) and **local** (parameters and variables inside functions).
 
 ### Global Scope
 
@@ -1063,7 +1067,14 @@ All function names and struct names have global scope. A function name or struct
 
 ### Local Scope
 
-All variables declared in a function (including parameters) have local scope. They are visible from the place they are declared to the end of the enclosing block or function. Variables declared in nested blocks shadow variables with the same name in outer scopes.
+Parameters and variables are **local**. Each declaration introduces a binding that is **visible from the declaration through the end of the innermost scope that contains that declaration**. Resolving an identifier searches **from the innermost scope outward** until a binding is found.
+
+**Blocks:** A block `{ ... }` introduces a **new inner scope** for the declarations that appear in its declaration-and-statement list. An inner scope may **shadow** a local variable from an outer scope if the same identifier is declared again. (Restrictions on reusing **parameter** names are stated in the static semantic reference.)
+
+**`for` statements:** For `for (<init>; <condition>; <update>) <body>`:
+
+- Declarations in `<init>` are treated like declarations in the **same local scope** as the `for` itself (the innermost enclosing block or function body). They are **not** limited to the loop alone: the name **remains in scope** for the rest of that enclosing block or body **after** the `for`.
+- The loop `<body>` is elaborated in an **inner scope** nested under that enclosing scope. A declaration in `<body>` may therefore shadow a name introduced in `<init>` without being a duplicate declaration in the same scope.
 
 ---
 

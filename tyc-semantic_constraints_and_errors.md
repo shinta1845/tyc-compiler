@@ -34,7 +34,7 @@ The TyC static semantic checker must detect and report the following error types
 **Scope-specific Rules:**
 - **Global scope:** Struct names must be unique among all struct declarations, and function names must be unique among all function declarations (no overloading). **Struct type names and function names use separate namespaces:** the same identifier may name both a struct type and a function (e.g. `struct foo { ... };` and `int foo(int x, int y) { ... }` are valid). Context disambiguates—type position in declarations vs. `(` in a call.
 - **Function scope:** Parameters belong to the function's scope and are visible throughout the entire function body. Parameter names must be unique within the same parameter list. **You must not declare a local variable with the same name as a parameter anywhere in that function's body**, including inside nested `{ }` blocks; that is reported as `Redeclared(Variable, <name>)` (not shadowing). TyC does not allow inner blocks to shadow an enclosing function's parameters.
-- **Local scope (block):** Variables must have unique names within the same block
+- **Local scope (block):** Variables must have unique names within the same block.
 - **Shadowing:** Variables in nested blocks may shadow **other local variables** from outer blocks in the same function, subject to the rule above (parameters cannot be shadowed).
 
 **Examples:**
@@ -840,6 +840,8 @@ When multiple errors are present, report them in the following order:
 **Within one tier:** report the **first** failure encountered during the semantic **visit** (order depends on how constructs are checked, not on source left-to-right alone). **One** error per run; use the **reference test suite** as ground truth.
 
 ### Scope Management
+
+Lexical scope (blocks, shadowing, and `for` init vs. loop body) is defined normatively in **`tyc_specification.md` § Scope Rules**. The checker should follow that model; the Redeclared / UndeclaredIdentifier rules in this document are consequences of it.
 
 - **Global scope:** Functions and structs (names are unique within each kind; struct names and function names may coincide—see Redeclared rules above)
 - **Function scope:** Parameters (visible throughout function body; see Redeclared rules—locals may not reuse parameter names)
